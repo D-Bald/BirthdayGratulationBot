@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "repl_python3_BirthdayGratulationBot"
+version = "0.1.0"
+description = ""
+authors = ["D-Bald <<>>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+python-dotenv = "^0.20.0"
+discord = "^1.7.3"
+pandas = "^1.4.2"
+poetry = "^1.1.13"
+table2ascii = "^0.2.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

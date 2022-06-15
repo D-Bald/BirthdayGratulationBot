@@ -3,15 +3,14 @@ import time
 import discord
 from discord.ext import commands
 import typing
-import pandas as pd
 from dotenv import load_dotenv
 from config import PREFIX, LINK
+import birthday_calendar as bc
 import utils
 
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-FILEPATH = './data/dates.csv'
 
 intents = discord.Intents.default()  
 intents.members = True
@@ -20,33 +19,27 @@ bot = commands.Bot(command_prefix = PREFIX, intents=intents)
 
 @bot.command()
 async def birthdays(ctx):
-    df_dates = pd.read_csv(FILEPATH)
-    output = utils.create_output_table(df_dates)
+    df_dates = bc.get_dates()
+    output = utils.make_output_table(df_dates)
     await ctx.send(f"Geburtstage:\n```\n{output}\n```")
 
 @bot.command()
 async def birthday(ctx, name: str, date: typing.Optional[str] = None):
-    df_dates = pd.read_csv(FILEPATH)
-
     # Checke ob zum gegebenen Namen bereits ein Eintrag existiert.
     # Falls nicht, füge diesen hinzu, falls ein Datum angegeben wurde.
-    if any(df_dates.name == name):
+    if bc.exists_entry(name):
         # Falls ein Datum angegeben wurde, wird der bestehende Eintrag nicht überschrieben
         if date:
             await ctx.send(f"Geburtstag von {name} schon gespeichert.\nZum Löschen verwende `!forgetbirthday {name}`")
         # Falls kein Datum angegeben wurde, sende den gespeicherten Geburtstag zurück
         else:
-            output = utils.create_output_table_for_name(df_dates, name)
+            df_dates = bc.get_dates()
+            output = utils.make_output_table_for_name(df_dates, name)
             await ctx.send(f"Geburtstag:\n```\n{output}\n```")
     else:
         if date:
-            df_new = pd.DataFrame({"name": [name], "date": [date]})
-            df_dates = pd.concat([df_dates, df_new],
-                        ignore_index=True,
-                    )
-            df_dates.to_csv(FILEPATH, index=False)
-
-            output = utils.create_output_table_for_name(df_dates, name)
+            df_dates = bc.add_entry(name, date)
+            output = utils.make_output_table_for_name(df_dates, name)
             await ctx.send(f"Geburtstag gespeichert:\n```\n{output}\n```")
         # Falls kein Datum angegeben und kein name gefunden wurde, kann kein Geburtstag zurückgeschickt werden.
         else:
@@ -54,14 +47,12 @@ async def birthday(ctx, name: str, date: typing.Optional[str] = None):
 
 @bot.command()
 async def forgetbirthday(ctx, name: str):
-    df_dates = pd.read_csv(FILEPATH)
     # Checke ob zum gegebenen Namen ein Eintrag existiert.
     # Lösche den Eintrag nur, falls das der Fall ist.
-    if not any(df_dates.name == name):
+    if not bc.exists_entry(name):
         await ctx.send(f"Geburtstag von {name} konnte nicht gefunden werden.")
     else:
-        df_dates = df_dates.drop(df_dates[df_dates['name'] == name].index)
-        df_dates.to_csv(FILEPATH, index=False)
+        bc.remove_entry(name)
         await ctx.send(f"Geburtstag von {name} wurde gelöscht.")
 
 ### Events and commands unrelated to birthday-gratulation-bot ###
