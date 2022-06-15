@@ -23,3 +23,4 @@ MIT License. Copyright (c) 2022 David Baldauf.
 
 # TODO
 - Gratulation on birthday (on a given time automatically)
+- Missing docstrings (e.g in utils)

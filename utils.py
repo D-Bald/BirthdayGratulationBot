@@ -16,7 +16,6 @@ def make_output_table(df):
 
     return output
 
-
 def make_output_table_for_name(df: pd.DataFrame, name: str):
     # Suche den Eintrag für den gegebenen Namen
     birthday = df.iloc[df[df["name"] == name].index[0]]
@@ -31,7 +30,7 @@ def make_output_table_for_name(df: pd.DataFrame, name: str):
     return output
 
 def check_date_format(date: str):
-    """Checks if the given date hase the date format `"%d.%m.%Y"` i.e. "dd.mm.yyy".
+    """Checks if the given date hase the date format `"%d.%m.%Y"`.
 
     Args:
         date: the date as string
@@ -45,6 +44,30 @@ def check_date_format(date: str):
     except ValueError:
         res = False
     return res
+
+def string_to_datetime(date_str: str):
+    """Parses a date string to datetime format.
+
+    Args:
+        date_str: the date as string with format `"%d.%m.%Y"`
+    
+    Returns:
+        Datetime object with given date and time "00:00:00"
+    """
+    date = datetime.datetime.strptime(date_str, "%d.%m.%Y")
+    return date
+
+def format_date_string(date_str: str):
+    """parses a date string to string with format "dd.mm.yyy".
+
+    Args:
+        date_str: the date as string with format `"%d.%m.%Y"`
+    
+    Returns:
+        Given date as string in format "dd.mm.yyy"
+    """
+    date = string_to_datetime(date_str)
+    return datetime.datetime.strftime(date, "%d.%m.%Y")
 
 def _gratulation_if_zero_days_left(days_left):
     if days_left == 0:

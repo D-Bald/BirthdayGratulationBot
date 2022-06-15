@@ -1,5 +1,6 @@
 import datetime
 import pandas as pd
+import utils
 
 FILEPATH = './data/dates.csv'
 
@@ -38,7 +39,7 @@ def add_entry(name, date: str):
     Returns:
         The added birthday as pandas DataFrame with columns `name` and `date`.
     """
-    df_new = pd.DataFrame({"name": [name], "date": [format_date_string(date)], "days_left": days_left(date)})
+    df_new = pd.DataFrame({"name": [name], "date": [utils.format_date_string(date)], "days_left": days_left(date)})
     df_dates = pd.concat(
         [get_dates(), df_new],
         ignore_index=True,
@@ -70,7 +71,7 @@ def days_left(date_str: str):
         Days until the next birthday as integer.
     """
     # parse from string
-    date = _string_to_datetime(date_str)
+    date = utils.string_to_datetime(date_str)
     # set year to current year
     today = datetime.datetime.today().date()
     date = datetime.datetime(today.year,date.month,date.day).date()
@@ -81,22 +82,6 @@ def days_left(date_str: str):
         date = datetime.datetime(today.year + 1,date.month,date.day).date()
     
     return (date - today).days
-
-def _string_to_datetime(date_str: str):
-    """parses a date string to datetime format.
-
-    Args:
-        date_str: the date as string with format `"%d.%m.%Y"` i.e. "dd.mm.yyy"
-    
-    Returns:
-        Datetime object with given date and time "00:00:00"
-    """
-    date = datetime.datetime.strptime(date_str, "%d.%m.%Y")
-    return date
-
-def format_date_string(date_str: str):
-    date = _string_to_datetime(date_str)
-    return datetime.datetime.strftime(date, "%d.%m.%Y")
 
 if __name__ == "__main__":
     # print(days_left("14.06.1994"))
