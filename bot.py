@@ -38,9 +38,12 @@ async def birthday(ctx, name: str, date: typing.Optional[str] = None):
             await ctx.send(f"Geburtstag:\n```\n{output}\n```")
     else:
         if date:
-            df_dates = bc.add_entry(name, date)
-            output = utils.make_output_table_for_name(df_dates, name)
-            await ctx.send(f"Geburtstag gespeichert:\n```\n{output}\n```")
+            if utils.check_date_format(date):
+                df_dates = bc.add_entry(name, date)
+                output = utils.make_output_table_for_name(df_dates, name)
+                await ctx.send(f"Geburtstag gespeichert:\n```\n{output}\n```")
+            else:
+                await ctx.send(f"Das Datum ist nicht im richtigen Format: TT.MM.YYY")
         # Falls kein Datum angegeben und kein name gefunden wurde, kann kein Geburtstag zurückgeschickt werden.
         else:
             await ctx.send(f"Geburtstag von {name} konnte nicht gefunden werden.")
@@ -109,6 +112,5 @@ async def serverinfo(ctx):
     join.set_footer(text ='Created: %s'%time)
 
     await ctx.send(embed = join)
-
 
 bot.run(TOKEN)

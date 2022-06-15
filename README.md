@@ -22,8 +22,4 @@ DISCORD_TOKEN = "YOUR_TOKEN_GOES_HERE"
 MIT License. Copyright (c) 2022 David Baldauf.
 
 # TODO
-- Sort list from `!birthdays` alphabetically or by birthday (maybe always from current date)
-- Calculate days until the birthday for `!birthday name`
-- Gratulation on birthday (on a given time automatically and if someone asks for the name)
-- Refactor: Business-Logic in a seperate file => rename main.py in bot.py. Here only the discord.py stuff is happening and the rest is handed over to handler functions.
-- Regex check for valid `date` parameter in `!birthday name date`
+- Gratulation on birthday (on a given time automatically)
