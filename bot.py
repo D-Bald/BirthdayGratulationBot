@@ -19,27 +19,28 @@ bot = commands.Bot(command_prefix = PREFIX, intents=intents)
 
 @bot.command()
 async def birthdays(ctx):
-    df_dates = bc.get_dates()
+    df_dates = bc.get_birthdays(ctx.guild.id)
     output = utils.make_output_table(df_dates)
     await ctx.send(f"Geburtstage:\n```\n{output}\n```")
 
 @bot.command()
 async def birthday(ctx, name: str, date: typing.Optional[str] = None):
-    # Checke ob zum gegebenen Namen bereits ein Eintrag existiert.
+    guild_id  = ctx.guild.id
+    # Checke ob zum gegebenen Namen auf dem aktuellen Server (`guild_id`) bereits ein Eintrag existiert.
     # Falls nicht, füge diesen hinzu, falls ein Datum angegeben wurde.
-    if bc.exists_entry(name):
+    if bc.exists_entry(name, guild_id):
         # Falls ein Datum angegeben wurde, wird der bestehende Eintrag nicht überschrieben
         if date:
             await ctx.send(f"Geburtstag von {name} schon gespeichert.\nZum Löschen verwende `!forgetbirthday {name}`")
         # Falls kein Datum angegeben wurde, sende den gespeicherten Geburtstag zurück
         else:
-            df_dates = bc.get_dates()
+            df_dates = bc.get_birthdays(guild_id)
             output = utils.make_output_table_for_name(df_dates, name)
             await ctx.send(f"Geburtstag:\n```\n{output}\n```")
     else:
         if date:
             if utils.check_date_format(date):
-                df_dates = bc.add_entry(name, date)
+                df_dates = bc.add_entry(name, date, guild_id)
                 output = utils.make_output_table_for_name(df_dates, name)
                 await ctx.send(f"Geburtstag gespeichert:\n```\n{output}\n```")
             else:
@@ -50,12 +51,13 @@ async def birthday(ctx, name: str, date: typing.Optional[str] = None):
 
 @bot.command()
 async def forgetbirthday(ctx, name: str):
-    # Checke ob zum gegebenen Namen ein Eintrag existiert.
+    guild_id  = ctx.guild.id
+    # Checke ob zum gegebenen Namen auf dem aktuellen Server (`guild_id`) ein Eintrag existiert.
     # Lösche den Eintrag nur, falls das der Fall ist.
-    if not bc.exists_entry(name):
+    if not bc.exists_entry(name, guild_id):
         await ctx.send(f"Geburtstag von {name} konnte nicht gefunden werden.")
     else:
-        bc.remove_entry(name)
+        bc.remove_entry(name, guild_id)
         await ctx.send(f"Geburtstag von {name} wurde gelöscht.")
 
 ### Events and commands unrelated to birthday-gratulation-bot ###

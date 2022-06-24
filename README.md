@@ -22,5 +22,5 @@ DISCORD_TOKEN = "YOUR_TOKEN_GOES_HERE"
 MIT License. Copyright (c) 2022 David Baldauf.
 
 # TODO
-- Gratulation on birthday (on a given time automatically)
+- Gratulation on birthday (on a given time automatically) (https://stackoverflow.com/questions/64173987/how-to-make-the-bot-run-a-defined-function-at-a-specific-time-everyday-in-discor or with https://discordpy.readthedocs.io/en/stable/ext/tasks/index.html) (calendar logic already implemented with birthday_calendar.get_todays_birthdays/1)
 - Missing docstrings (e.g in utils)
