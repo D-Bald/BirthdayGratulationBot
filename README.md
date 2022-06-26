@@ -20,10 +20,11 @@ You can also edit the `DATE_FORMAT` (currently `'%d.%m.%Y'`) and time when birth
  - `date` is optional. If it is passed, the command tries to add a new entry with the given `name` and `date`, but will not go on, if an entry for the given name exists. If `date` is left blank then the command tries to fetch the stored birthday for the given `name`.
 - `!forgetbirthday name`
  - the same rules for `name` as in `!addbirthday` apply here.
+- `!subscribe`
+- `!unsubscribe`
 
 ## License
 MIT License. Copyright (c) 2022 David Baldauf.
 
 # TODO
-- Gratulation on birthday (on a given time automatically) (https://stackoverflow.com/questions/64173987/how-to-make-the-bot-run-a-defined-function-at-a-specific-time-everyday-in-discor or with https://discordpy.readthedocs.io/en/stable/ext/tasks/index.html) (calendar logic already implemented with birthday_calendar.get_todays_birthdays/1)
 - Missing docstrings (e.g in utils)
