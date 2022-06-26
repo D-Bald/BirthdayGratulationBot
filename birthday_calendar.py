@@ -5,7 +5,7 @@ import utils
 FILEPATH = './data/dates.csv'
 
 async def _get_all_birthdays():
-    """Get all birthday dates for all guilds.
+    """Gets all birthday dates for all guilds.
 
     Returns:
         All birthdays as pandas DataFrame with columns `name`, `date`, `guild_id` and `dates_left`.
@@ -17,7 +17,7 @@ async def _get_all_birthdays():
     return df
     
 async def get_birthdays(guild_id: int):
-    """Get all birthday dates for a given guild.
+    """Gets all birthday dates for a given guild.
 
     Args:
         guild_id: the id of the guild that the query is run for.

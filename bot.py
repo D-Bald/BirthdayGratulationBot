@@ -3,16 +3,13 @@ import time
 import asyncio
 import schedule
 import discord
-from discord.ext import commands
 import typing
-from dotenv import load_dotenv
 from pprint import pprint
+from discord.ext import commands
+from dotenv import load_dotenv
 from config import PREFIX, LINK, PUBLISH_BIRTHDAYS_TIME
 import birthday_calendar as bc
 import utils
-
-from datetime import datetime
-
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -107,8 +104,7 @@ async def publish_daylie_birthdays(ctx):
     Args:
         ctx: discord.py context.
     """
-    guild_id  = ctx.guild.id
-    birthdays = await bc.get_todays_birthdays(guild_id)
+    birthdays = await bc.get_todays_birthdays(ctx.guild.id)
     output = utils.make_output_table(birthdays)
     await ctx.send(f"Heutige Geburtstage:\n```\n{output}\n```")
 
