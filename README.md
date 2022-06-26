@@ -1,4 +1,4 @@
-# BirthdayGratulationBot
+# Birthday Gratulation Bot
 Discord bot to celebrate assigned birthdays.
 
 ## Setup
@@ -9,6 +9,9 @@ Create a `.env` file with the entry
 ```console
 DISCORD_TOKEN = "YOUR_TOKEN_GOES_HERE"
 ```
+
+Set the Command `PREFIX` (currently `!`), the invitation `LINK` you get following the RealPython tutorial.
+You can also edit the `DATE_FORMAT` (currently `'%d.%m.%Y'`) and time when birthdays are published each day (`PUBLISH_BIRTHDAYS_TIME`).
 
 ## Commands
 - `!birthdays`

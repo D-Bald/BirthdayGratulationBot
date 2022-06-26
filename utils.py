@@ -1,9 +1,17 @@
-import datetime
+from datetime import datetime
 import pandas as pd
 from table2ascii import table2ascii as t2a, PresetStyle
 from config import DATE_FORMAT
 
 def make_output_table(df):
+    """Builds a markdown table as code-block from given dataframe.
+
+    Args:
+        df: pandas DataFrame with columns `name`, `date` and `days_left`
+
+    Returns:
+        output string with markdown table containing name, date and days_left or "Herzlichen Glückwunsch" if days_left is equal to zero.
+    """
     body = []
     for i in df.index:
         entry = [df["name"].iloc[i], df["date"].iloc[i], df["days_left"].apply(_gratulation_if_zero_days_left).iloc[i]]
@@ -41,7 +49,7 @@ def check_date_format(date: str):
     """
     res = True
     try:
-        res = bool(datetime.datetime.strptime(date, DATE_FORMAT))
+        res = bool(datetime.strptime(date, DATE_FORMAT))
     except ValueError:
         res = False
     return res
@@ -55,7 +63,7 @@ def string_to_datetime(date_str: str):
     Returns:
         Datetime object with given date and time "00:00:00"
     """
-    date = datetime.datetime.strptime(date_str, DATE_FORMAT)
+    date = datetime.strptime(date_str, DATE_FORMAT)
     return date
 
 def format_date_string(date_str: str):
@@ -68,7 +76,7 @@ def format_date_string(date_str: str):
         Given date as string in format specified in config.py
     """
     date = string_to_datetime(date_str)
-    return datetime.datetime.strftime(date, DATE_FORMAT)
+    return datetime.strftime(date, DATE_FORMAT)
 
 def _gratulation_if_zero_days_left(days_left):
     if days_left == 0:
