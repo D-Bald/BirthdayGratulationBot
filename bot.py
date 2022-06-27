@@ -71,15 +71,19 @@ async def subscribe(ctx):
     Args:
         ctx: discord.py context.
     """
-    job = schedule.every().day.at(PUBLISH_BIRTHDAYS_TIME).do(asyncio.create_task, publish_daylie_birthdays(ctx))
-    scheduled_subscription_jobs[ctx.guild.id] = job
-  
-    print("----------------------")
-    print("Current jobs (guild_id: job_details):\n")
-    pprint(scheduled_subscription_jobs)
-    print("----------------------")
-  
-    await ctx.send(f"Subscription successful.")
+    # only add new subscription if guild is not subscribed yet
+    if ctx.guild.id in scheduled_subscription_jobs:
+        job = schedule.every().day.at(PUBLISH_BIRTHDAYS_TIME).do(asyncio.create_task, publish_daylie_birthdays(ctx))
+        scheduled_subscription_jobs[ctx.guild.id] = job
+    
+        print("----------------------")
+        print("Current jobs (guild_id: job_details):\n")
+        pprint(scheduled_subscription_jobs)
+        print("----------------------")
+    
+        await ctx.send(f"Subscription successful.")
+    else:
+        await ctx.send(f"Already subscribed.")
 
 @bot.command()
 async def unsubscribe(ctx):
