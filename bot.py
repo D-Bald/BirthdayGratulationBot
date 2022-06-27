@@ -108,6 +108,13 @@ async def publish_daylie_birthdays(ctx):
     output = utils.make_output_table(birthdays)
     await ctx.send(f"Heutige Geburtstage:\n```\n{output}\n```")
 
+    # reschedule the job due to exception=RuntimeError('cannot reuse already awaited coroutine')
+    # (ugly bug fix)
+    job_old = scheduled_subscription_jobs.pop(ctx.guild.id)
+    schedule.cancel_job(job_old)
+    job_new = schedule.every().day.at(PUBLISH_BIRTHDAYS_TIME).do(asyncio.create_task, publish_daylie_birthdays(ctx))
+    scheduled_subscription_jobs[ctx.guild.id] = job_new
+
 async def run_scheduled_jobs(sleep=1):
     """Loop to run jobs as soon as the scheduler marks them as pending. This is executed as task in the handler for the 'on_ready' bot event.
 
