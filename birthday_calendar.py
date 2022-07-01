@@ -105,14 +105,14 @@ def days_left(date_str: str):
     Returns:
         Days until the next birthday as integer.
     """
-    # parse from string
+    # Parse from string
     date = utils.string_to_datetime(date_str)
-    # set year to current year
+    # Set year to current year
     today = datetime.datetime.today().date()
     date = datetime.datetime(today.year,date.month,date.day).date()
 
-    # check if birthday is this year or next year
-    # adjust year accordingly
+    # Check if birthday is this year or next year
+    # Adjust year accordingly
     if (date - today).days < 0:
         date = datetime.datetime(today.year + 1,date.month,date.day).date()
     
@@ -128,7 +128,7 @@ def _has_birthday_today(date_str: str):
     Returns:
         `True` if the date indicates a birthday today; `False` else.
     """
-    # parse from string
+    # Parse from string
     date = utils.string_to_datetime(date_str)
 
     today = datetime.datetime.today()
