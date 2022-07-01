@@ -66,7 +66,9 @@ async def forgetbirthday(ctx, name: str):
 
 @bot.command()
 async def subscribe(ctx):
-    """Schedules a job to be executed at PUBLISH_BIRTHDAYS_TIME from config.py and stores guild_id and job-instance as key-value pair in a global dictionary `scheduled_subscription_jobs` for later cancelation.
+    """
+    Schedules a job to be executed at PUBLISH_BIRTHDAYS_TIME from config.py and stores guild_id and job-instance
+    as key-value pair in a global dictionary `scheduled_subscription_jobs` for later cancelation.
 
     Args:
         ctx: discord.py context.
@@ -87,7 +89,9 @@ async def subscribe(ctx):
 
 @bot.command()
 async def unsubscribe(ctx):
-    """Removes a job associated with the guild_id derived from the context from the global dictionary `scheduled_subscription_jobs` and cancel the job from the scheduler.
+    """
+    Removes a job associated with the guild_id derived from the context from the global dictionary `scheduled_subscription_jobs`
+    and cancel the job from the scheduler.
 
     Args:
         ctx: discord.py context.
@@ -103,7 +107,11 @@ async def unsubscribe(ctx):
     await ctx.send(f"Successfully unsubsribed.")
 
 async def publish_daylie_birthdays(ctx):
-    """Fetches todays birthdays and publishes it to the given context. On subscription a task is created and scheduled to execute this coroutine with the correct context (e.g. to send the message to the channel, that the subscribe command was called in).
+    """
+    Fetches todays birthdays and publishes it to the given context.
+    
+    On subscription a task is created and scheduled to execute this coroutine with the correct context
+    (e.g. to send the message to the channel, that the subscribe command was called in).
 
     Args:
         ctx: discord.py context.
@@ -120,7 +128,10 @@ async def publish_daylie_birthdays(ctx):
     scheduled_subscription_jobs[ctx.guild.id] = job_new
 
 async def run_scheduled_jobs(sleep=1):
-    """Loop to run jobs as soon as the scheduler marks them as pending. This is executed as task in the handler for the 'on_ready' bot event.
+    """
+    Loop to run jobs as soon as the scheduler marks them as pending.
+    
+    This is executed as task in the handler for the 'on_ready' bot event.
 
     Args:
         sleep: number of seconds to wait between retries to run pending jobs.

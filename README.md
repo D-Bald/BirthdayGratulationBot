@@ -25,6 +25,3 @@ You can also edit the `DATE_FORMAT` (currently `'%d.%m.%Y'`) and time when birth
 
 ## License
 MIT License. Copyright (c) 2022 David Baldauf.
-
-# TODO
-- Missing docstrings (e.g in utils)

@@ -17,7 +17,8 @@ async def _get_all_birthdays():
     return df
     
 async def get_birthdays(guild_id: int):
-    """Gets all birthday dates for a given guild.
+    """
+    Gets all birthday dates for a given guild.
 
     Args:
         guild_id: the id of the guild that the query is run for.
@@ -34,7 +35,8 @@ async def get_birthdays(guild_id: int):
     return df
 
 async def get_todays_birthdays(guild_id: int):
-    """Gets all entries that have birthday today for a given guild.
+    """
+    Gets all entries that have birthday today for a given guild.
 
     Args:
         guild_id: the id of the guild that the query is run for.
@@ -47,7 +49,8 @@ async def get_todays_birthdays(guild_id: int):
     return birthdays
 
 async def exists_entry(name: str, guild_id: int):
-    """Checks if an entry with the given name exists.
+    """
+    Checks if an entry with the given name exists.
 
     Args:
         name: the name of the person as string
@@ -59,7 +62,8 @@ async def exists_entry(name: str, guild_id: int):
     return any(df.name == name)
 
 async def add_entry(name, date: str, guild_id: int):
-    """Adds an entry with given name and date to the repository.
+    """
+    Adds an entry with given name and date to the repository.
 
     Args:
         name: the name of the person as string
@@ -79,7 +83,8 @@ async def add_entry(name, date: str, guild_id: int):
     return df_dates
 
 async def remove_entry(name: str, guild_id: int):
-    """Removes an entry with given name from the repository.
+    """
+    Removes an entry with given name from the repository.
 
     Args:
         name: the name of the person as string
@@ -91,7 +96,8 @@ async def remove_entry(name: str, guild_id: int):
     df_csv.to_csv(FILEPATH, index=False)
 
 def days_left(date_str: str):
-    """Calculates the number of days until the next birthday.
+    """
+    Calculates the number of days until the next birthday.
 
     Args:
         date_str: the date as string
@@ -113,7 +119,8 @@ def days_left(date_str: str):
     return (date - today).days
 
 def _has_birthday_today(date_str: str):
-    """Checks if the given date matches todays month and day.
+    """
+    Checks if the given date matches todays month and day.
 
     Args:
         date_str: the date as string
