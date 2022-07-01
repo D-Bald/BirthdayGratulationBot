@@ -1,10 +1,7 @@
 import os
 import time
-import asyncio
-import schedule
 import discord
 import typing
-from pprint import pprint
 from discord.ext import commands
 from dotenv import load_dotenv
 from config import PREFIX, LINK, PUBLISH_BIRTHDAYS_TIME
@@ -24,12 +21,27 @@ scheduled_subscription_jobs = {}
 
 @bot.command()
 async def birthdays(ctx):
+    """
+    Sends back a list of the all birthdays associated to the guild derived by the context.
+
+    Args:
+        ctx: discord.py context
+    """
     df_dates = await bc.get_birthdays(ctx.guild.id)
     output = utils.make_output_table(df_dates)
     await ctx.send(f"Geburtstage:\n```\n{output}\n```")
 
 @bot.command()
 async def birthday(ctx, name: str, date: typing.Optional[str] = None):
+    """
+    Depending on the input either sends back the birthday associated to the given name in the guild derived by the context
+    or stores a new birthday if a date is provided.
+
+    Args:
+        ctx: discord.py context
+        name: name of the person the birthday should be fetched or stored
+        date (default: None): date of the birthday that should be stored
+    """
     guild_id  = ctx.guild.id
     # Checke ob zum gegebenen Namen auf dem aktuellen Server (`guild_id`) bereits ein Eintrag existiert.
     # Falls nicht, füge diesen hinzu, falls ein Datum angegeben wurde.
@@ -56,6 +68,13 @@ async def birthday(ctx, name: str, date: typing.Optional[str] = None):
 
 @bot.command()
 async def forgetbirthday(ctx, name: str):
+    """
+    Removes the entry associated to the given name and guild derived from the context.
+
+    Args:
+        ctx: discord.py context
+        name: name of the person the birthday should be removed
+    """
     guild_id  = ctx.guild.id
     # Checke ob zum gegebenen Namen auf dem aktuellen Server (`guild_id`) ein Eintrag existiert.
     # Lösche den Eintrag nur, falls das der Fall ist.
@@ -68,21 +87,14 @@ async def forgetbirthday(ctx, name: str):
 @bot.command()
 async def subscribe(ctx):
     """
-    Schedules a job to be executed at PUBLISH_BIRTHDAYS_TIME from config.py and stores guild_id and job-instance
-    as key-value pair in a global dictionary `scheduled_subscription_jobs` for later cancelation.
+    Schedules a job to be executed at PUBLISH_BIRTHDAYS_TIME from config.py.
 
     Args:
-        ctx: discord.py context.
+        ctx: discord.py context
     """
     # Only add new subscription if guild is not subscribed yet
     if ctx.guild.id in scheduled_subscription_jobs:
-        job = schedule.every().day.at(PUBLISH_BIRTHDAYS_TIME).do(asyncio.create_task, publish_daylie_birthdays(ctx))
-        scheduled_subscription_jobs[ctx.guild.id] = job
-    
-        print("----------------------")
-        print("Current jobs (guild_id: job_details):\n")
-        pprint(scheduled_subscription_jobs)
-        print("----------------------")
+        utils.schedule_task(ctx, publish_daylie_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
     
         await ctx.send(f"Subscription successful.")
     else:
@@ -95,15 +107,9 @@ async def unsubscribe(ctx):
     and cancel the job from the scheduler.
 
     Args:
-        ctx: discord.py context.
+        ctx: discord.py context
     """
-    job = scheduled_subscription_jobs.pop(ctx.guild.id)
-    schedule.cancel_job(job)
-
-    print("----------------------")
-    print("Current jobs (guild_id: job_details):\n")
-    pprint(scheduled_subscription_jobs)
-    print("----------------------")
+    utils.remove_task(ctx, scheduled_subscription_jobs)
     
     await ctx.send(f"Successfully unsubsribed.")
 
@@ -115,31 +121,21 @@ async def publish_daylie_birthdays(ctx):
     (e.g. to send the message to the channel, that the subscribe command was called in).
 
     Args:
-        ctx: discord.py context.
+        ctx: discord.py context
     """
     birthdays = await bc.get_todays_birthdays(ctx.guild.id)
     output = utils.make_output_table(birthdays)
     await ctx.send(f"Heutige Geburtstage:\n```\n{output}\n```")
 
-    # Reschedule the job due to exception=RuntimeError('cannot reuse already awaited coroutine')
-    # (ugly bug fix)
-    job_old = scheduled_subscription_jobs.pop(ctx.guild.id)
-    schedule.cancel_job(job_old)
-    job_new = schedule.every().day.at(PUBLISH_BIRTHDAYS_TIME).do(asyncio.create_task, publish_daylie_birthdays(ctx))
-    scheduled_subscription_jobs[ctx.guild.id] = job_new
+    # This is an ugly bugfix to work around the exception:
+    #    RuntimeError('cannot reuse already awaited coroutine')
+    # Remove and cancel old Job
+    utils.remove_task(ctx,scheduled_subscription_jobs)
+    # Schedule new Job
+    utils.schedule_task(ctx, publish_daylie_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
 
-async def run_scheduled_jobs(sleep=1):
-    """
-    Loop to run jobs as soon as the scheduler marks them as pending.
-    
-    This is executed as task in the handler for the 'on_ready' bot event.
 
-    Args:
-        sleep: number of seconds to wait between retries to run pending jobs.
-    """
-    while True:
-        schedule.run_pending()
-        await asyncio.sleep(sleep)
+
       
 @bot.event
 async def on_ready():
@@ -150,7 +146,7 @@ async def on_ready():
     print("----------------------")
 
     # Run periodically scheduled tasks
-    bot.loop.create_task(run_scheduled_jobs(sleep=1))
+    bot.loop.create_task(utils.run_scheduled_jobs(sleep=1))
   
 ### Events and commands unrelated to birthday-gratulation-bot ###
   
