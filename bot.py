@@ -19,7 +19,8 @@ intents.members = True
 
 bot = commands.Bot(command_prefix = PREFIX, intents=intents)
 
-scheduled_subscription_jobs = {} # used to store the jobs per guild, to be able to unsubscribe and therefore cancel the job for the unsubscribing guild
+# Dictionary to store the jobs per guild to be able to unsubscribe and therefore cancel the job for the unsubscribing guild
+scheduled_subscription_jobs = {}
 
 @bot.command()
 async def birthdays(ctx):
@@ -73,7 +74,7 @@ async def subscribe(ctx):
     Args:
         ctx: discord.py context.
     """
-    # only add new subscription if guild is not subscribed yet
+    # Only add new subscription if guild is not subscribed yet
     if ctx.guild.id in scheduled_subscription_jobs:
         job = schedule.every().day.at(PUBLISH_BIRTHDAYS_TIME).do(asyncio.create_task, publish_daylie_birthdays(ctx))
         scheduled_subscription_jobs[ctx.guild.id] = job
@@ -120,7 +121,7 @@ async def publish_daylie_birthdays(ctx):
     output = utils.make_output_table(birthdays)
     await ctx.send(f"Heutige Geburtstage:\n```\n{output}\n```")
 
-    # reschedule the job due to exception=RuntimeError('cannot reuse already awaited coroutine')
+    # Reschedule the job due to exception=RuntimeError('cannot reuse already awaited coroutine')
     # (ugly bug fix)
     job_old = scheduled_subscription_jobs.pop(ctx.guild.id)
     schedule.cancel_job(job_old)
@@ -179,7 +180,8 @@ async def serverinfo(ctx):
     roles = [x.name for x in guild.roles]
     role_length = len(roles)
 
-    if role_length > 50: #Just in case there are too many roles...
+    # Just in case there are too many roles...
+    if role_length > 50:
         roles = roles[:50]
         roles.append('>>>> Displaying[50/%s] Roles'%len(roles))
 
