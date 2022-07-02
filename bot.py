@@ -94,7 +94,7 @@ async def subscribe(ctx):
     """
     # Only add new subscription if guild is not subscribed yet
     if ctx.guild.id in scheduled_subscription_jobs:
-        utils.schedule_task(ctx, publish_daylie_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
+        utils.schedule_task(ctx, publish_daily_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
     
         await ctx.send(f"Subscription successful.")
     else:
@@ -113,7 +113,7 @@ async def unsubscribe(ctx):
     
     await ctx.send(f"Successfully unsubsribed.")
 
-async def publish_daylie_birthdays(ctx):
+async def publish_daily_birthdays(ctx):
     """
     Fetches todays birthdays and publishes it to the given context.
     
@@ -132,7 +132,7 @@ async def publish_daylie_birthdays(ctx):
     # Remove and cancel old Job
     utils.remove_task(ctx,scheduled_subscription_jobs)
     # Schedule new Job
-    utils.schedule_task(ctx, publish_daylie_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
+    utils.schedule_task(ctx, publish_daily_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
 
 
 
