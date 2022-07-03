@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from config import PREFIX, LINK, PUBLISH_BIRTHDAYS_TIME
 import birthday_calendar as bc
 import utils
+from custom_decorators import repeatable
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -93,7 +94,7 @@ async def subscribe(ctx):
         ctx: discord.py context
     """
     # Only add new subscription if guild is not subscribed yet
-    if ctx.guild.id in scheduled_subscription_jobs:
+    if ctx.guild.id not in scheduled_subscription_jobs:
         utils.schedule_task(ctx, publish_daily_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
     
         await ctx.send(f"Subscription successful.")
@@ -113,6 +114,7 @@ async def unsubscribe(ctx):
     
     await ctx.send(f"Successfully unsubsribed.")
 
+@repeatable(jobs_dict=scheduled_subscription_jobs, time=PUBLISH_BIRTHDAYS_TIME)
 async def publish_daily_birthdays(ctx):
     """
     Fetches todays birthdays and publishes it to the given context.
@@ -127,15 +129,6 @@ async def publish_daily_birthdays(ctx):
     output = utils.make_output_table(birthdays)
     await ctx.send(f"Heutige Geburtstage:\n```\n{output}\n```")
 
-    # This is an ugly bugfix to work around the exception:
-    #    RuntimeError('cannot reuse already awaited coroutine')
-    # Remove and cancel old Job
-    utils.remove_task(ctx,scheduled_subscription_jobs)
-    # Schedule new Job
-    utils.schedule_task(ctx, publish_daily_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
-
-
-
       
 @bot.event
 async def on_ready():
@@ -144,6 +137,9 @@ async def on_ready():
     print("Username: %s"%bot.user.name)
     print("ID: %s"%bot.user.id)
     print("----------------------")
+
+    from datetime import datetime
+    print(datetime.now().time())
 
     # Run periodically scheduled tasks
     bot.loop.create_task(utils.run_scheduled_jobs(sleep=1))
