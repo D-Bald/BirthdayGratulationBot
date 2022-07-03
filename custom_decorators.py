@@ -15,7 +15,7 @@ def repeatable(jobs_dict={}, time=datetime.now().time().strftime("%H:%M")):
         time: time to that the function should be rescheduled. Defaults to the current time when decorator is invoked.
 
     Returns:
-        A decorator function that expects the wrapped function to pass a discord.py context in the first argument.
+        A decorator function that expects the wrapped function to pass a discord.py context as first positional argument.
     """
     def decorator_repeatable(func):
         @functools.wraps(func)
