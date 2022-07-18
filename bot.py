@@ -1,13 +1,15 @@
 import os
+import asyncio
 import time
-import discord
 import typing
+from datetime import datetime
+import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-from config import PREFIX, LINK, PUBLISH_BIRTHDAYS_TIME
-import birthday_calendar as bc
 import utils
-from custom_decorators import repeatable
+import birthday_calendar as bc
+from custom_decorators import async_repeatable
+from config import PREFIX, LINK, PUBLISH_BIRTHDAYS_TIME
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -17,7 +19,7 @@ intents.members = True
 
 bot = commands.Bot(command_prefix = PREFIX, intents=intents)
 
-# Dictionary to store the jobs per guild to be able to unsubscribe and therefore cancel the job for the unsubscribing guild
+# Dictionary to store the jobs per channel id to be able to unsubscribe and therefore cancel the job for the unsubscribing channel
 scheduled_subscription_jobs = {}
 
 @bot.command()
@@ -93,13 +95,25 @@ async def subscribe(ctx):
     Args:
         ctx: discord.py context
     """
-    # Only add new subscription if guild is not subscribed yet
-    if ctx.guild.id not in scheduled_subscription_jobs:
-        utils.schedule_task(ctx, publish_daily_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
+    # Only add new subscription if channel is not subscribed yet
+    if ctx.channel.id not in scheduled_subscription_jobs:
+        await _subscribe_channel(ctx.channel)
     
         await ctx.send(f"Subscription successful.")
     else:
         await ctx.send(f"Already subscribed.")
+    
+
+async def _subscribe_channel(channel):
+    """
+    Schedules a job to be executed at PUBLISH_BIRTHDAYS_TIME from config.py.
+
+    Args:
+        channel_id: discord.py channel
+    """
+    # Only add new subscription if channel is not subscribed yet
+    if channel.id not in scheduled_subscription_jobs:
+        utils.schedule_task(channel, publish_daily_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
 
 @bot.command()
 async def unsubscribe(ctx):
@@ -110,12 +124,15 @@ async def unsubscribe(ctx):
     Args:
         ctx: discord.py context
     """
-    utils.remove_task(ctx, scheduled_subscription_jobs)
-    
-    await ctx.send(f"Successfully unsubsribed.")
+    # Only try to remove subscription if channel is already subscribed
+    if ctx.channel.id in scheduled_subscription_jobs:
+        utils.remove_task(ctx.channel, scheduled_subscription_jobs)
+        await ctx.send(f"Successfully unsubsribed.")
+    else:
+        await ctx.send(f"Not subscribed yet.")
 
-@repeatable(jobs_dict=scheduled_subscription_jobs, time=PUBLISH_BIRTHDAYS_TIME)
-async def publish_daily_birthdays(ctx):
+@async_repeatable(jobs_dict=scheduled_subscription_jobs, time=PUBLISH_BIRTHDAYS_TIME)
+async def publish_daily_birthdays(guild_channel):
     """
     Fetches todays birthdays and publishes it to the given context.
     
@@ -123,11 +140,11 @@ async def publish_daily_birthdays(ctx):
     (e.g. to send the message to the channel, that the subscribe command was called in).
 
     Args:
-        ctx: discord.py context
+        guild_channel: discord.py discord.abc.GuildChannel
     """
-    birthdays = await bc.get_todays_birthdays(ctx.guild.id)
+    birthdays = await bc.get_todays_birthdays(guild_channel.id)
     output = utils.make_output_table(birthdays)
-    await ctx.send(f"Heutige Geburtstage:\n```\n{output}\n```")
+    await guild_channel.send(f"Heutige Geburtstage:\n```\n{output}\n```")
 
       
 @bot.event
@@ -136,10 +153,17 @@ async def on_ready():
     print("Beigetreten als")
     print("Username: %s"%bot.user.name)
     print("ID: %s"%bot.user.id)
+    print("Zeit: %s"%datetime.now().time())
     print("----------------------")
 
-    from datetime import datetime
-    print(datetime.now().time())
+    # Load saved subscriptions
+    subs_list = utils.load_subscribed_channels()
+    channels = [await bot.fetch_channel(channel_id) for channel_id in subs_list]
+    await asyncio.gather(*[_subscribe_channel(channel) for channel in channels])
+
+    print("Scheduled subscription jobs")
+    print(scheduled_subscription_jobs)
+    print("----------------------")
 
     # Run periodically scheduled tasks
     bot.loop.create_task(utils.run_scheduled_jobs(sleep=1))
@@ -192,4 +216,5 @@ async def serverinfo(ctx):
 
     await ctx.send(embed = join)
 
-bot.run(TOKEN)
+if __name__ == "__main__":
+    bot.run(TOKEN)
