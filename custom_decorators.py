@@ -1,7 +1,6 @@
 import functools
 from datetime import datetime
 import utils
-import pprint
 
 # Following the recipe from https://realpython.com/primer-on-python-decorators/#both-please-but-never-mind-the-bread
 def async_repeatable(jobs_dict={}, time=datetime.now().time().strftime("%H:%M:00")):

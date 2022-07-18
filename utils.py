@@ -1,8 +1,8 @@
+import asyncio
 import csv
+import schedule
 from datetime import datetime
 import pandas as pd
-import asyncio
-import schedule
 from pprint import pprint
 from table2ascii import table2ascii as t2a, PresetStyle
 from config import DATE_FORMAT
@@ -128,8 +128,8 @@ def schedule_task(guild_channel, func, time, jobs_dict):
         time: time in string format that the scheduler uses to schedule the task
         jobs_dict: dictionary containing all scheduled jobs associated to the channel_id
     """
-    # job = schedule.every().day.at(time).do(asyncio.create_task, func(guild_channel))
-    job = schedule.every().minute.do(asyncio.create_task, func(guild_channel))
+    job = schedule.every().day.at(time).do(asyncio.create_task, func(guild_channel))
+    # job = schedule.every().minute.do(asyncio.create_task, func(guild_channel))
     jobs_dict[guild_channel.id] = job
     _save_subscribed_channels(guild_channel)
     # print("----------------------")
