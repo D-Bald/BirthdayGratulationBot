@@ -111,9 +111,7 @@ async def _subscribe_channel(channel):
     Args:
         channel_id: discord.py channel
     """
-    # Only add new subscription if channel is not subscribed yet
-    if channel.id not in scheduled_subscription_jobs:
-        utils.schedule_task(channel, publish_daily_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
+    utils.schedule_task(channel, publish_daily_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
 
 @bot.command()
 async def unsubscribe(ctx):

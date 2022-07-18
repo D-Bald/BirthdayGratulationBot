@@ -34,6 +34,7 @@ def make_output_table(df):
 
     return output
 
+
 def make_output_table_for_name(df: pd.DataFrame, name: str):
     """
     Builds a markdown table as code-block from given dataframe and name.
@@ -78,6 +79,7 @@ def check_date_format(date: str):
         res = False
     return res
 
+
 def string_to_datetime(date_str: str):
     """
     Parses a date string to datetime format.
@@ -90,6 +92,7 @@ def string_to_datetime(date_str: str):
     """
     date = datetime.strptime(date_str, DATE_FORMAT)
     return date
+
 
 def format_date_string(date_str: str):
     """
@@ -129,13 +132,17 @@ def schedule_task(guild_channel, func, time, jobs_dict):
         jobs_dict: dictionary containing all scheduled jobs associated to the channel_id
     """
     job = schedule.every().day.at(time).do(asyncio.create_task, func(guild_channel))
-    # job = schedule.every().minute.do(asyncio.create_task, func(guild_channel))
+    # job = schedule.every(10).seconds.do(asyncio.create_task, func(guild_channel)) # uncomment for debugging
+
     jobs_dict[guild_channel.id] = job
+
     _save_subscribed_channels(guild_channel)
+
     # print("----------------------")
     # print("Current jobs (channel_id: job_details):\n")
     # pprint(jobs_dict)
     # print("----------------------")
+
 
 def remove_task(guild_channel, jobs_dict):
     """
@@ -150,14 +157,13 @@ def remove_task(guild_channel, jobs_dict):
     job = jobs_dict.pop(guild_channel.id)
     schedule.cancel_job(job)
 
-    df_subs = pd.read_csv('./data/subscriptions.csv')
-    df_subs = df_subs.drop(df_subs[df_subs['channel_id'] == guild_channel.id].index)
+    _delete_subscribed_channel(guild_channel)
 
-    df_subs.to_csv('./data/subscriptions.csv', index=False)
     # print("----------------------")
     # print("Current jobs (channel_id: job_details):\n")
     # pprint(jobs_dict)
     # print("----------------------")
+
 
 async def run_scheduled_jobs(sleep=1):
     """
@@ -171,9 +177,11 @@ async def run_scheduled_jobs(sleep=1):
     while True:
         schedule.run_pending()
         await asyncio.sleep(sleep)
+
+
 def load_subscribed_channels():
     """
-    Reads channel ids to be scheduled and returns them as list
+    Reads channel ids to be scheduled and returns them as list.
 
     Returns:
         channel_ids: list of ids of subscribed channels
@@ -182,13 +190,30 @@ def load_subscribed_channels():
     subs_list = df_subs["channel_id"].values.tolist()
     return subs_list
 
-def _save_subscribed_channels(guild_channel):
+
+def _save_subscribed_channels(channel):
     """
-    Saves the contexts channel id to be scheduled again on start-up
+    Saves the given channel to be scheduled again on start-up.
 
     Args:
         guild_channel: discord.py discord.abc.GuildChannel
     """
-    with open('./data/subscriptions.csv', 'a') as f:
-        writer = csv.writer(f)
-        writer.writerow([guild_channel.id])
+    df = pd.read_csv("./data/subscriptions.csv")
+    if not any(df.channel_id == channel.id):
+        df = pd.concat(
+            [df, pd.DataFrame({"channel_id": [channel.id]})],
+            ignore_index=True,
+        )
+        df.to_csv("./data/subscriptions.csv", index=False)
+
+def _delete_subscribed_channel(channel):
+    """
+    Deletes the given channel from the repo.
+
+    Args:
+        channel: discord.py discord.abc.GuildChannel
+    """
+    df_subs = pd.read_csv('./data/subscriptions.csv')
+    df_subs = df_subs.drop(df_subs[df_subs['channel_id'] == channel.id].index)
+
+    df_subs.to_csv('./data/subscriptions.csv', index=False)

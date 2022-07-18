@@ -24,7 +24,7 @@ def async_repeatable(jobs_dict={}, time=datetime.now().time().strftime("%H:%M:00
             # Remove and cancel old job
             utils.remove_task(guild_channel, jobs_dict)
             # Schedule new job
-            utils.schedule_task(guild_channel, func, time, jobs_dict)
+            utils.schedule_task(guild_channel, decorator(func), time, jobs_dict)
               
             return value
         return wrapper    
