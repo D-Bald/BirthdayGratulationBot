@@ -126,7 +126,7 @@ async def unsubscribe(ctx):
     # Only try to remove subscription if channel is already subscribed
     if ctx.channel.id in scheduled_subscription_jobs:
         async_scheduling.remove_task(ctx.channel, scheduled_subscription_jobs)
-        await ctx.send(f"Successfully unsubsribed.")
+        await ctx.send(f"Successfully unsubscribed.")
     else:
         await ctx.send(f"Not subscribed yet.")
 
