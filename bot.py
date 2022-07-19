@@ -12,9 +12,6 @@ import subscriptions
 import birthday_calendar as bc
 from config import PREFIX, LINK, PUBLISH_BIRTHDAYS_TIME
 
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-
 intents = discord.Intents.default()  
 intents.members = True
 
@@ -150,8 +147,8 @@ async def publish_daily_birthdays(guild_channel):
 async def on_ready():
     print("----------------------")
     print("Beigetreten als")
-    print("Username: %s"%bot.user.name)
-    print("ID: %s"%bot.user.id)
+    print("Username: %s" % bot.user.name)
+    print("ID: %s" % bot.user.id)
     print("Zeit: %s"%datetime.now().time())
     print("----------------------")
 
@@ -159,10 +156,6 @@ async def on_ready():
     subs_list = subscriptions.load_subscribed_channels()
     channels = [await bot.fetch_channel(channel_id) for channel_id in subs_list]
     await asyncio.gather(*[_subscribe_channel(channel) for channel in channels])
-
-    print("Scheduled subscription jobs")
-    print(scheduled_subscription_jobs)
-    print("----------------------")
 
     # Run periodically scheduled tasks
     bot.loop.create_task(async_scheduling.run_scheduled_jobs(sleep=1))
@@ -216,4 +209,7 @@ async def serverinfo(ctx):
     await ctx.send(embed = join)
 
 if __name__ == "__main__":
+    load_dotenv()
+    TOKEN = os.getenv('DISCORD_TOKEN')
+
     bot.run(TOKEN)
