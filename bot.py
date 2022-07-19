@@ -6,19 +6,16 @@ from datetime import datetime
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-import async_scheduling
 import utils
 import subscriptions
 import birthday_calendar as bc
+import async_scheduling
 from config import PREFIX, LINK, PUBLISH_BIRTHDAYS_TIME
 
 intents = discord.Intents.default()  
 intents.members = True
 
 bot = commands.Bot(command_prefix = PREFIX, intents=intents)
-
-# Dictionary to store the jobs per channel id to be able to unsubscribe and therefore cancel the job for the unsubscribing channel
-scheduled_subscription_jobs = {}
 
 @bot.command()
 async def birthdays(ctx):
@@ -94,7 +91,7 @@ async def subscribe(ctx):
         ctx: discord.py context
     """
     # Only add new subscription if channel is not subscribed yet
-    if ctx.channel.id not in scheduled_subscription_jobs:
+    if not async_scheduling.is_scheduled(ctx.channel.id):
         await _subscribe_channel(ctx.channel)
     
         await ctx.send(f"Subscription successful.")
@@ -109,25 +106,24 @@ async def _subscribe_channel(channel):
     Args:
         channel_id: discord.py channel
     """
-    async_scheduling.new_task(channel, publish_daily_birthdays, PUBLISH_BIRTHDAYS_TIME, scheduled_subscription_jobs)
+    async_scheduling.new_task(channel, publish_daily_birthdays, PUBLISH_BIRTHDAYS_TIME)
 
 @bot.command()
 async def unsubscribe(ctx):
     """
-    Removes a job associated with the guild_id derived from the context from the global dictionary `scheduled_subscription_jobs`
-    and cancel the job from the scheduler.
+    Removes a job associated with the guild_id derived from the context.
 
     Args:
         ctx: discord.py context
     """
     # Only try to remove subscription if channel is already subscribed
-    if ctx.channel.id in scheduled_subscription_jobs:
-        async_scheduling.remove_task(ctx.channel, scheduled_subscription_jobs)
+    if async_scheduling.is_scheduled(ctx.channel.id):
+        async_scheduling.remove_task(ctx.channel)
         await ctx.send(f"Successfully unsubscribed.")
     else:
         await ctx.send(f"Not subscribed yet.")
 
-@async_scheduling.repeatable_decorator(jobs_dict=scheduled_subscription_jobs, time=PUBLISH_BIRTHDAYS_TIME)
+@async_scheduling.repeatable_decorator(time=PUBLISH_BIRTHDAYS_TIME)
 async def publish_daily_birthdays(guild_channel):
     """
     Fetches todays birthdays and publishes it to the given context.
