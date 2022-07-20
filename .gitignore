@@ -7,6 +7,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# Caches
+__pycache__/
+*.py[cod]
+
 ### data ###
 /data/*
 # Behalte den backup-Ordner, indem eine Dummy-Datei enthalten bleibt
