@@ -3,7 +3,7 @@ import functools
 import schedule
 from datetime import datetime
 from pprint import pprint
-import controllers.subscriptions_controller as subscriptions_controller
+import models.subscriptions_model as subscriptions_model
 
 # Dictionary to store the jobs per channel id to be able to unsubscribe and therefore cancel the job for the unsubscribing channel
 _scheduled_subscription_jobs = {}
@@ -35,7 +35,7 @@ def run_daily_at(time=datetime.now().time().strftime("%H:%M:00")):
         return wrapper    
     return decorator
 
-def is_scheduled(guild_channel):
+def is_scheduled(channel_id):
     """
     Checks if a job exists that is associated to the given `guild_channel`.
 
@@ -43,12 +43,12 @@ def is_scheduled(guild_channel):
         RuntimeError('cannot reuse already awaited coroutine')
     
     Args:
-        guild_channel: The channel to look up in the dictionary of scheduled jobs
+        channel_id: The id of the channel to look up in the dictionary of scheduled jobs
 
     Returns:
         `True` if the entry exists; `False` else
     """
-    return guild_channel in _scheduled_subscription_jobs
+    return channel_id in _scheduled_subscription_jobs
 
 def new_task(guild_channel, func, time):
     """
@@ -64,12 +64,46 @@ def new_task(guild_channel, func, time):
     """
     _schedule_task(guild_channel, func, time)
 
-    subscriptions_controller.save_subscribed_channels(guild_channel)
+    subscriptions_model.save_subscribed_channels(guild_channel)
 
     print("----------------------")
     print("Current jobs (channel_id: job_details):\n")
     pprint(_scheduled_subscription_jobs)
     print("----------------------")
+
+
+def remove_task(guild_channel):
+    """
+    Removes the task associated to the given guild_channel.
+
+    Calls subscription repo to delete the entry.
+    Prints out the resulting list of current scheduled jobs.
+
+    Args:
+        guild_channel: discord.py discord.abc.GuildChannel
+    """
+    _cancel_task(guild_channel)
+
+    subscriptions_model.delete_subscribed_channel(guild_channel)
+
+    print("----------------------")
+    print("Current jobs (channel_id: job_details):\n")
+    pprint(_scheduled_subscription_jobs)
+    print("----------------------")
+
+
+async def run_scheduled_jobs(sleep=1):
+    """
+    Loop to run jobs as soon as the scheduler marks them as pending.
+    
+    This is executed as task in the handler for the 'on_ready' bot event.
+
+    Args:
+        sleep: number of seconds to wait between retries to run pending jobs.
+    """
+    while True:
+        schedule.run_pending()
+        await asyncio.sleep(sleep)
 
 
 def _schedule_task(guild_channel, func, time):
@@ -91,26 +125,6 @@ def _schedule_task(guild_channel, func, time):
     _scheduled_subscription_jobs[guild_channel.id] = job
 
 
-def remove_task(guild_channel):
-    """
-    Removes the task associated to the given guild_channel.
-
-    Calls subscription repo to delete the entry.
-    Prints out the resulting list of current scheduled jobs.
-
-    Args:
-        guild_channel: discord.py discord.abc.GuildChannel
-    """
-    _cancel_task(guild_channel)
-
-    subscriptions_controller.delete_subscribed_channel(guild_channel)
-
-    print("----------------------")
-    print("Current jobs (channel_id: job_details):\n")
-    pprint(_scheduled_subscription_jobs)
-    print("----------------------")
-
-
 def _cancel_task(guild_channel):
     """
     Removes the task associated to the given guild_channel in the dictionary and cancels it from scheduler.
@@ -122,17 +136,3 @@ def _cancel_task(guild_channel):
     """
     job = _scheduled_subscription_jobs.pop(guild_channel.id)
     schedule.cancel_job(job)
-
-
-async def run_scheduled_jobs(sleep=1):
-    """
-    Loop to run jobs as soon as the scheduler marks them as pending.
-    
-    This is executed as task in the handler for the 'on_ready' bot event.
-
-    Args:
-        sleep: number of seconds to wait between retries to run pending jobs.
-    """
-    while True:
-        schedule.run_pending()
-        await asyncio.sleep(sleep)

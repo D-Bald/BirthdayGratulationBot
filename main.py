@@ -7,8 +7,8 @@ import asyncio
 from  datetime import datetime
 from pprint import pprint
 
-import controllers.subscriptions_controller as subscriptions_controller
-import utils.async_scheduling as async_scheduling
+import models.subscriptions_model as subscriptions_model
+import utils.subscriptions_controller as subscriptions_controller
 from cogs.subscriptions import SubscriptionCommands
 
 
@@ -31,12 +31,12 @@ async def on_ready():
     print_start_message()
 
     # Load saved subscriptions
-    subs_list = subscriptions_controller.load_subscribed_channels()
+    subs_list = subscriptions_model.read_subscribed_channels()
     channels = [await bot.fetch_channel(channel_id) for channel_id in subs_list]
     await asyncio.gather(*[SubscriptionCommands.subscribe_channel(channel) for channel in channels])
 
     # Run periodically scheduled tasks
-    bot.loop.create_task(async_scheduling.run_scheduled_jobs(sleep=1))
+    bot.loop.create_task(subscriptions_controller.run_scheduled_jobs(sleep=1))
 
 def print_start_message():
     print("----------------------")
