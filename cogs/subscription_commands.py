@@ -1,17 +1,16 @@
 import disnake
 from disnake.ext import commands
 
-import models.birthday_calendar as bc
-import utils.subscriptions_controller as subscriptions_controller
-
+import repos.birthday_calendar as bc
+from utils import subscriptions_controller
 from config import PUBLISH_BIRTHDAYS_TIME
+
 
 class SubscriptionCommands(commands.Cog):
     """Handling interactions manage subscriptions."""
-
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-    
+
     @commands.slash_command()
     async def subscribe(self, inter: disnake.ApplicationCommandInteraction):
         """Schedules a job to be executed at PUBLISH_BIRTHDAYS_TIME from config.py."""
@@ -22,11 +21,11 @@ class SubscriptionCommands(commands.Cog):
         # Only add new subscription if channel is not subscribed yet
         if not subscriptions_controller.is_scheduled(inter.channel.id):
             await self.subscribe_channel(inter.channel)
-        
+
             await inter.send(f"Subscription successful.")
         else:
             await inter.send(f"Already subscribed.")
-    
+
     @classmethod
     async def subscribe_channel(cls, channel):
         """
@@ -35,7 +34,8 @@ class SubscriptionCommands(commands.Cog):
         Args:
             channel_id: discord.py channel
         """
-        subscriptions_controller.new_task(channel, cls.publish_daily_birthdays, PUBLISH_BIRTHDAYS_TIME)
+        subscriptions_controller.new_task(channel, cls.publish_daily_birthdays,
+                                          PUBLISH_BIRTHDAYS_TIME)
 
     @commands.slash_command()
     async def unsubscribe(self, inter: disnake.ApplicationCommandInteraction):
@@ -55,15 +55,16 @@ class SubscriptionCommands(commands.Cog):
     @staticmethod
     async def publish_daily_birthdays(guild_channel):
         """
-        Fetches todays birthdays and publishes it to the given context.
+        Fetches todays birthdays and publishes it to the given interaction.
         
-        On subscription a task is created and scheduled to execute this coroutine with the correct context
+        On subscription a task is created and scheduled to execute this coroutine with the correct interaction
         (e.g. to send the message to the channel, that the subscribe command was called in).
 
         Args:
-            guild_channel: discord.py discord.abc.GuildChannel
+            guild_channel: disnake.abc.GuildChannel
         """
-        birthdays = await bc.BirthdayCalendar().get_todays_birthdays(guild_channel.guild.id)
+        birthdays = await bc.BirthdayCalendar().get_todays_birthdays(
+            guild_channel.guild.id)
         output = bc.make_output_table(birthdays)
         await guild_channel.send(f"Heutige Geburtstage:\n```\n{output}\n```")
 

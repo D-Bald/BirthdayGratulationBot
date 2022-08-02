@@ -1,19 +1,23 @@
 import pandas as pd
 from table2ascii import table2ascii as t2a, PresetStyle
-import utils.datetime_tools as datetime_tools
-
+from utils import datetime_tools
 
 FILEPATH = './data/dates.csv'
 
+
 class BirthdayNotFoundError(Exception):
     pass
+
+
 class ResultError(Exception):
     pass
+
+
 class WriteDaysLeftError(Exception):
     pass
 
-class Birthday:
 
+class Birthday:
     def __init__(self, name, date, guild_id):
         self.name = name
         self._date = date
@@ -36,14 +40,11 @@ class Birthday:
     @days_left.setter
     def days_left(self, _value):
         return WriteDaysLeftError("days left is a computed attribute")
-    
 
-    
+
 class BirthdayCalendar:
-
     def __init__(self, guild_id):
         self.guild_id = guild_id
-
 
     async def list_birthdays(self):
         """
@@ -54,10 +55,12 @@ class BirthdayCalendar:
         """
         df = await self._get_all_birthdays()
 
-        birthdays = [Birthday(row["name"], row["date"], self.guild_id) for _, row in df.iterrows()]
+        birthdays = [
+            Birthday(row["name"], row["date"], self.guild_id)
+            for _, row in df.iterrows()
+        ]
 
         return birthdays
-
 
     async def get_todays_birthdays(self):
         """
@@ -72,7 +75,10 @@ class BirthdayCalendar:
         # Filter for entries that have birthday today
         df = df[df["date"].apply(datetime_tools.has_birthday_today)]
 
-        birthdays = [Birthday(row["name"], row["date"], self.guild_id) for _, row in df.iterrows()]
+        birthdays = [
+            Birthday(row["name"], row["date"], self.guild_id)
+            for _, row in df.iterrows()
+        ]
 
         return birthdays
 
@@ -95,7 +101,6 @@ class BirthdayCalendar:
 
         return birthday
 
-
     async def exists_entry(self, name: str):
         """
         Checks if an entry with the given name exists.
@@ -107,10 +112,11 @@ class BirthdayCalendar:
             `True` if an entry exists, `False` else.
         """
         list_of_birthdays = await self.list_birthdays()
-        list_of_name_checks = [birthday.name == name for birthday in list_of_birthdays]
+        list_of_name_checks = [
+            birthday.name == name for birthday in list_of_birthdays
+        ]
 
         return any(list_of_name_checks)
-
 
     async def add_entry(self, name: str, date: str):
         """
@@ -125,16 +131,20 @@ class BirthdayCalendar:
         """
         birthday = Birthday(name, date, self.guild_id)
 
-        df_new = pd.DataFrame({"name": [name], "date": [datetime_tools.format_date_string(date)], "guild_id": self.guild_id})
+        df_new = pd.DataFrame({
+            "name": [name],
+            "date": [datetime_tools.format_date_string(date)],
+            "guild_id": self.guild_id
+        })
         df = pd.concat(
-            [await self._get_all_birthdays(filter_by_guild_id=False), df_new], # No filtering to not override the file with missing entries.
+            [await self._get_all_birthdays(filter_by_guild_id=False), df_new
+             ],  # No filtering to not override the file with missing entries.
             ignore_index=True,
         )
 
         df.to_csv(FILEPATH, index=False)
 
         return birthday
-
 
     async def remove_entry(self, name: str):
         """
@@ -173,6 +183,7 @@ class BirthdayCalendar:
 # Output styling for birthdays
 #################################################
 
+
 def make_output_table(list_of_birthdays):
     """
     Builds a markdown table as code-block from given list of `Birthday` objects.
@@ -183,13 +194,13 @@ def make_output_table(list_of_birthdays):
     Returns:
         output string with markdown table containing name, date and days_left or "Herzlichen Glückwunsch" if days_left is equal to zero.
     """
-    body = [[bd.name, bd.date, bd.days_left] for bd in list_of_birthdays]
+    body = [[bd.name, bd.date,
+             _gratulation_if_zero_days_left(bd.days_left)]
+            for bd in list_of_birthdays]
 
-    output = t2a(
-        header=["Name", "Datum", "Verbleibende Tage"],
-        body=body,
-        style=PresetStyle.thin_compact
-    )
+    output = t2a(header=["Name", "Datum", "Verbleibende Tage"],
+                 body=body,
+                 style=PresetStyle.thin_compact)
 
     return output
 
@@ -206,13 +217,15 @@ def make_output_table_for_birthday(birthday):
     """
 
     # Erstelle Tabelle
-    output = t2a(
-        header=["Name", "Datum", "Verbleibende Tage"],
-        body=[[birthday.name, birthday.date, _gratulation_if_zero_days_left(birthday.days_left)]],
-        style=PresetStyle.thin_compact
-    )
+    output = t2a(header=["Name", "Datum", "Verbleibende Tage"],
+                 body=[[
+                     birthday.name, birthday.date,
+                     _gratulation_if_zero_days_left(birthday.days_left)
+                 ]],
+                 style=PresetStyle.thin_compact)
 
     return output
+
 
 def _gratulation_if_zero_days_left(days_left):
     if days_left == 0:

@@ -3,10 +3,11 @@ import functools
 import schedule
 from datetime import datetime
 from pprint import pprint
-import models.subscriptions_model as subscriptions_model
+import repos.subscriptions_repo as subscriptions_repo
 
 # Dictionary to store the jobs per channel id to be able to unsubscribe and therefore cancel the job for the unsubscribing channel
 _scheduled_subscription_jobs = {}
+
 
 # Following the recipe from https://realpython.com/primer-on-python-decorators/#both-please-but-never-mind-the-bread
 def run_daily_at(time=datetime.now().time().strftime("%H:%M:00")):
@@ -30,10 +31,13 @@ def run_daily_at(time=datetime.now().time().strftime("%H:%M:00")):
             _cancel_task(guild_channel)
             # Schedule new job
             _schedule_task(guild_channel, decorator(func), time)
-              
+
             return value
-        return wrapper    
+
+        return wrapper
+
     return decorator
+
 
 def is_scheduled(channel_id):
     """
@@ -50,6 +54,7 @@ def is_scheduled(channel_id):
     """
     return channel_id in _scheduled_subscription_jobs
 
+
 def new_task(guild_channel, func, time):
     """
     Creates new job and stores is it to be remembered on restart.
@@ -58,13 +63,13 @@ def new_task(guild_channel, func, time):
     Prints out the resulting list of current scheduled jobs.
 
     Args:
-        guild_channel: discord.py discord.abc.GuildChannel to be passed to func
+        guild_channel: disnake.abc.GuildChannel to be passed to func
         func: the function that is scheduled as asynchronous task
         time: time in string format that the scheduler uses to schedule the task
     """
     _schedule_task(guild_channel, func, time)
 
-    subscriptions_model.save_subscribed_channels(guild_channel)
+    subscriptions_repo.save_subscribed_channels(guild_channel)
 
     print("----------------------")
     print("Current jobs (channel_id: job_details):\n")
@@ -80,11 +85,11 @@ def remove_task(guild_channel):
     Prints out the resulting list of current scheduled jobs.
 
     Args:
-        guild_channel: discord.py discord.abc.GuildChannel
+        guild_channel: disnake.abc.GuildChannel
     """
     _cancel_task(guild_channel)
 
-    subscriptions_model.delete_subscribed_channel(guild_channel)
+    subscriptions_repo.delete_subscribed_channel(guild_channel)
 
     print("----------------------")
     print("Current jobs (channel_id: job_details):\n")
@@ -115,11 +120,12 @@ def _schedule_task(guild_channel, func, time):
     The func is scheduled as asynchronous task so it has to be awaited or run as task itself!
 
     Args:
-        guild_channel: discord.py discord.abc.GuildChannel to be passed to func
+        guild_channel: disnake.abc.GuildChannel to be passed to func
         func: the function that is scheduled as asynchronous task
         time: time in string format that the scheduler uses to schedule the task
     """
-    job = schedule.every().day.at(time).do(asyncio.create_task, func(guild_channel))
+    job = schedule.every().day.at(time).do(asyncio.create_task,
+                                           func(guild_channel))
     # job = schedule.every().minute.do(asyncio.create_task, func(guild_channel)) # uncomment for debugging
 
     _scheduled_subscription_jobs[guild_channel.id] = job
@@ -132,7 +138,7 @@ def _cancel_task(guild_channel):
     Prints out the resulting list of current scheduled jobs.
 
     Args:
-        guild_channel: discord.py discord.abc.GuildChannel
+        guild_channel: disnake.abc.GuildChannel
     """
     job = _scheduled_subscription_jobs.pop(guild_channel.id)
     schedule.cancel_job(job)
