@@ -1,17 +1,10 @@
 # Birthday Gratulation Bot
 Discord bot to celebrate assigned birthdays.
 
-## Setup
-Follow the steps to create an account (if you don't have one yet), application and bot from [RealPython](https://realpython.com/how-to-make-a-discord-bot-python/). Also follow the steps to add the bot to add
+## Usage
 
-Create a `.env` file with the entry
+Add the bot to your server by clicking [here](https://discord.com/api/oauth2/authorize?client_id=952656778007552090&permissions=380104763456&scope=bot)
 
-```console
-DISCORD_TOKEN = "YOUR_TOKEN_GOES_HERE"
-```
-
-Set the invitation `LINK` you get following the RealPython tutorial.
-You can also edit the `DATE_FORMAT` (currently `'%d.%m.%Y'`) and time when birthdays are published each day (`PUBLISH_BIRTHDAYS_TIME`).
 
 ## Slash Commands
 - `/birthdays` - sends back a list of the all birthdays associated to the guild derived by the context.
