@@ -1,9 +1,11 @@
 import asyncio
 import functools
 import schedule
+
 from datetime import datetime
 from pprint import pprint
-import repos.subscriptions_repo as subscriptions_repo
+from daos import subscriptions
+
 
 # Dictionary to store the jobs per channel id to be able to unsubscribe and therefore cancel the job for the unsubscribing channel
 _scheduled_subscription_jobs = {}
@@ -69,7 +71,7 @@ def new_task(guild_channel, func, time):
     """
     _schedule_task(guild_channel, func, time)
 
-    subscriptions_repo.save_subscribed_channels(guild_channel)
+    subscriptions.save(guild_channel)
 
     print("----------------------")
     print("Current jobs (channel_id: job_details):\n")
@@ -89,7 +91,7 @@ def remove_task(guild_channel):
     """
     _cancel_task(guild_channel)
 
-    subscriptions_repo.delete_subscribed_channel(guild_channel)
+    subscriptions.delete(guild_channel)
 
     print("----------------------")
     print("Current jobs (channel_id: job_details):\n")
@@ -124,9 +126,8 @@ def _schedule_task(guild_channel, func, time):
         func: the function that is scheduled as asynchronous task
         time: time in string format that the scheduler uses to schedule the task
     """
-    job = schedule.every().day.at(time).do(asyncio.create_task,
-                                           func(guild_channel))
-    # job = schedule.every().minute.do(asyncio.create_task, func(guild_channel)) # uncomment for debugging
+    job = schedule.every().day.at(time).do(asyncio.create_task, func(guild_channel))
+    # job = schedule.every(10).seconds.do(asyncio.create_task, func(guild_channel)) # uncomment for debugging
 
     _scheduled_subscription_jobs[guild_channel.id] = job
 

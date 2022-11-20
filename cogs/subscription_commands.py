@@ -1,7 +1,7 @@
 import disnake
 from disnake.ext import commands
 
-import repos.birthday_calendar as bc
+import daos.birthday_calendar as bc
 from utils import subscriptions_controller
 from config import PUBLISH_BIRTHDAYS_TIME
 
@@ -63,8 +63,7 @@ class SubscriptionCommands(commands.Cog):
         Args:
             guild_channel: disnake.abc.GuildChannel
         """
-        birthdays = await bc.BirthdayCalendar().get_todays_birthdays(
-            guild_channel.guild.id)
+        birthdays = await bc.BirthdayCalendar(guild_channel.guild.id).get_todays_birthdays()
         output = bc.make_output_table(birthdays)
         await guild_channel.send(f"Heutige Geburtstage:\n```\n{output}\n```")
 

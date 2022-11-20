@@ -3,7 +3,7 @@ import disnake
 from disnake.ext import commands
 
 from utils import datetime_tools
-import repos.birthday_calendar as bc
+import daos.birthday_calendar as bc
 
 
 class BirthdayCommands(commands.Cog):
