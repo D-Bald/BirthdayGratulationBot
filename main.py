@@ -31,7 +31,7 @@ async def on_ready():
     print_start_message()
 
     # Load saved subscriptions
-    subs_list = subscriptions.list()
+    subs_list = subscriptions.all()
     channels = [
         await bot.fetch_channel(channel_id) for channel_id in subs_list
     ]

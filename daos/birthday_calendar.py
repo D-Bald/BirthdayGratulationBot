@@ -1,6 +1,6 @@
 import pandas as pd
 from table2ascii import table2ascii as t2a, PresetStyle
-from config import DATA_FILEPATH
+from config import DATES_FILEPATH
 from utils import datetime_tools
 
 
@@ -40,6 +40,11 @@ class Birthday:
     def days_left(self, _value):
         return WriteDaysLeftError("days left is a computed attribute")
 
+    def is_today(self):
+        if self.days_left == 0:
+            return True
+        return False
+
 
 class BirthdayCalendar:
     def __init__(self, guild_id):
@@ -52,7 +57,13 @@ class BirthdayCalendar:
         Returns:
             List of `Birthday` objects.
         """
-        df = await self._get_all_birthdays()
+        df = pd.read_csv(DATES_FILEPATH)
+
+        # Filter for the entries associated to the guild_id
+        df = df[df["guild_id"] == self.guild_id]
+
+        df["days_left"] = df["date"].apply(datetime_tools.days_until)
+        df = df.sort_values(by=["days_left", "name"]).reset_index(drop=True)
 
         birthdays = [
             Birthday(row["name"], row["date"], self.guild_id)
@@ -69,15 +80,10 @@ class BirthdayCalendar:
         Returns:
             List of `Birthday` objects.
         """
-        df = await self._get_all_birthdays()
+        dates = await self.list_birthdays()
 
         # Filter for entries that have birthday today
-        df = df[df["date"].apply(datetime_tools.has_birthday_today)]
-
-        birthdays = [
-            Birthday(row["name"], row["date"], self.guild_id)
-            for _, row in df.iterrows()
-        ]
+        birthdays = list(filter(lambda birthday: birthday.is_today(), dates))
 
         return birthdays
 
@@ -91,7 +97,7 @@ class BirthdayCalendar:
         Returns:
             One `Birthday` object.
         """
-        df = await self._get_all_birthdays()
+        df = await self._get_all_birthdays_as_df()
 
         # Suche den Eintrag für den gegebenen Namen
         df = df.iloc[df[df["name"] == name].index[0]]
@@ -141,9 +147,10 @@ class BirthdayCalendar:
             ignore_index=True,
         )
 
-        df.to_csv(DATA_FILEPATH, index=False)
+        df.to_csv(DATES_FILEPATH, index=False)
 
         return birthday
+
 
     async def remove_entry(self, name: str):
         """
@@ -152,12 +159,13 @@ class BirthdayCalendar:
         Args:
             name: the name of the person as string
         """
-        df = await self._get_all_birthdays()
+        df = await self._get_all_birthdays_as_df()
         df = df.drop(df[(df["name"] == name)].index)
 
-        df.to_csv(DATA_FILEPATH, index=False)
+        df.to_csv(DATES_FILEPATH, index=False)
 
-    async def _get_all_birthdays(self, filter_by_guild_id=True):
+
+    async def _get_all_birthdays_as_df(self, filter_by_guild_id=True):
         """Gets all birthday dates.
 
         Args:
@@ -167,7 +175,7 @@ class BirthdayCalendar:
         Returns:
             All birthdays as pandas DataFrame with columns `name`, `date`, `guild_id`.
         """
-        df = pd.read_csv(DATA_FILEPATH)
+        df = pd.read_csv(DATES_FILEPATH)
 
         if filter_by_guild_id:
             # Filter for the entries associated to the guild_id
@@ -175,6 +183,7 @@ class BirthdayCalendar:
 
         df["days_left"] = df["date"].apply(datetime_tools.days_until)
         df = df.sort_values(by=["days_left", "name"]).reset_index(drop=True)
+        
         return df
 
 

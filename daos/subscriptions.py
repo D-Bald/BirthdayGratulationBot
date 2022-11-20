@@ -3,7 +3,7 @@ import pandas as pd
 FILEPATH = './data/subscriptions.csv'
 
 
-def list():
+def all():
     """
     Reads channel ids to be scheduled and returns them as list.
 
