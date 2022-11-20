@@ -1,4 +1,3 @@
-import typing
 import disnake
 from disnake.ext import commands
 
@@ -27,7 +26,7 @@ class BirthdayCommands(commands.Cog):
     async def birthday(self,
                        inter: disnake.ApplicationCommandInteraction,
                        name: str,
-                       date: typing.Optional[str] = None):
+                       date: str | None):
         """Sends birthday date for given name or creates new entry if a date is passed."""
         """
         Depending on the input either sends back the birthday associated to the given name in the guild derived by the context
