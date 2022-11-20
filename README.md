@@ -24,4 +24,4 @@ You can also edit the `DATE_FORMAT` (currently `'%d.%m.%Y'`) and time when birth
 - `/unsubscribe` - of daily gratulation.
 
 ## License
-MIT License. Copyright (c) 2022 David Baldauf.
+MIT License. Copyright (c) 2022 David Potschka.
