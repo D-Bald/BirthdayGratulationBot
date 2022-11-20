@@ -1,5 +1,6 @@
 import disnake
 from disnake.ext import commands
+from disnake.abc import GuildChannel
 
 import daos.birthday_calendar as bc
 from utils import subscriptions_controller
@@ -27,7 +28,7 @@ class SubscriptionCommands(commands.Cog):
             await inter.send(f"Already subscribed.")
 
     @classmethod
-    async def subscribe_channel(cls, channel):
+    async def subscribe_channel(cls, channel: GuildChannel):
         """
         Schedules a job to be executed at PUBLISH_BIRTHDAYS_TIME from config.py.
 
@@ -53,7 +54,7 @@ class SubscriptionCommands(commands.Cog):
 
     @subscriptions_controller.run_daily_at(time=PUBLISH_BIRTHDAYS_TIME)
     @staticmethod
-    async def publish_daily_birthdays(guild_channel):
+    async def publish_daily_birthdays(guild_channel: GuildChannel):
         """
         Fetches todays birthdays and publishes it to the given interaction.
         
