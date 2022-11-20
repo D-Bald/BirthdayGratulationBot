@@ -1,4 +1,5 @@
 import pandas as pd
+from datetime import datetime
 from table2ascii import table2ascii as t2a, PresetStyle
 from config import DATES_FILEPATH
 from utils import datetime_tools
@@ -17,27 +18,27 @@ class WriteDaysLeftError(Exception):
 
 
 class Birthday:
-    def __init__(self, name, date, guild_id):
+    def __init__(self, name: str, date: datetime, guild_id: int):
         self.name = name
         self._date = date
         self.guild_id = guild_id
 
     @property
-    def date(self):
+    def date(self) -> datetime:
         "The date of the birthday stored as string in format "
         return self._date
 
     @date.setter
-    def date(self, date: str):
+    def date(self, date: str) -> None:
         datetime_tools.format_date_string(date)
 
     @property
-    def days_left(self):
+    def days_left(self) -> int:
         """Number of days until the birthdays."""
-        return datetime_tools.days_until(self._date)
+        return datetime_tools.days_until_yearday(self._date)
 
     @days_left.setter
-    def days_left(self, _value):
+    def days_left(self, _value) -> WriteDaysLeftError:
         return WriteDaysLeftError("days left is a computed attribute")
 
     def is_today(self):
@@ -48,7 +49,7 @@ class BirthdayCalendar:
     def __init__(self, guild_id):
         self.guild_id = guild_id
 
-    async def list_birthdays(self):
+    async def list_birthdays(self) -> list[Birthday]:
         """
         Lists all birthday dates associated to the guild with id given to `BirthdayCalendar.guild_id` attribute.
 
@@ -60,7 +61,7 @@ class BirthdayCalendar:
         # Filter for the entries associated to the guild_id
         df = df[df["guild_id"] == self.guild_id]
 
-        df["days_left"] = df["date"].apply(datetime_tools.days_until)
+        df["days_left"] = df["date"].apply(datetime_tools.days_until_yearday)
         df = df.sort_values(by=["days_left", "name"]).reset_index(drop=True)
 
         birthdays = [
@@ -70,7 +71,7 @@ class BirthdayCalendar:
 
         return birthdays
 
-    async def get_todays_birthdays(self):
+    async def get_todays_birthdays(self) -> list[Birthday]:
         """
         Gets all entries that have birthday today and are associated to the guild with id given to
         `BirthdayCalendar.guild_id` attribute.
@@ -85,7 +86,7 @@ class BirthdayCalendar:
 
         return birthdays
 
-    async def get_birthday(self, name: str):
+    async def get_birthday(self, name: str) -> Birthday:
         """
         Builds a markdown table as code-block from given dataframe and name.
 
@@ -104,7 +105,7 @@ class BirthdayCalendar:
 
         return birthday
 
-    async def exists_entry(self, name: str):
+    async def exists_entry(self, name: str) -> bool:
         """
         Checks if an entry with the given name exists.
 
@@ -121,7 +122,7 @@ class BirthdayCalendar:
 
         return any(list_of_name_checks)
 
-    async def add_entry(self, name: str, date: str):
+    async def add_entry(self, name: str, date: str) -> Birthday:
         """
         Adds an entry with given name and date to the repository.
 
@@ -150,7 +151,7 @@ class BirthdayCalendar:
         return birthday
 
 
-    async def remove_entry(self, name: str):
+    async def remove_entry(self, name: str) -> None:
         """
         Removes an entry with given name from the repository.
 
@@ -163,7 +164,7 @@ class BirthdayCalendar:
         df.to_csv(DATES_FILEPATH, index=False)
 
 
-    async def _get_all_birthdays_as_df(self, filter_by_guild_id=True):
+    async def _get_all_birthdays_as_df(self, filter_by_guild_id=True) -> pd.DataFrame:
         """Gets all birthday dates.
 
         Args:
@@ -179,7 +180,7 @@ class BirthdayCalendar:
             # Filter for the entries associated to the guild_id
             df = df[df["guild_id"] == self.guild_id]
 
-        df["days_left"] = df["date"].apply(datetime_tools.days_until)
+        df["days_left"] = df["date"].apply(datetime_tools.days_until_yearday)
         df = df.sort_values(by=["days_left", "name"]).reset_index(drop=True)
         
         return df
@@ -190,7 +191,7 @@ class BirthdayCalendar:
 #################################################
 
 
-def make_output_table(list_of_birthdays):
+def make_output_table(list_of_birthdays: list[Birthday]) -> str:
     """
     Builds a markdown table as code-block from given list of `Birthday` objects.
 
@@ -211,7 +212,7 @@ def make_output_table(list_of_birthdays):
     return output
 
 
-def make_output_table_for_birthday(birthday):
+def make_output_table_for_birthday(birthday: Birthday) -> str:
     """
     Builds a markdown table as code-block from given `Birthday` object.
 

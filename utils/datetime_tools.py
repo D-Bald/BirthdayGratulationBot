@@ -46,9 +46,9 @@ def format_date_string(date_str: str):
     date = string_to_datetime(date_str)
     return datetime.strftime(date, DATE_FORMAT)
 
-def days_until(date):
+def days_until_yearday(date: datetime|str):
     """
-    Calculates the number of days until the given date.
+    Calculates the number of days until the given date in year.
 
     Args:
         date: the date as string or datetime object
@@ -72,7 +72,7 @@ def days_until(date):
     
     return (date - today).days
 
-def has_birthday_today(date):
+def has_birthday_today(date: datetime|str):
     """
     Checks if the given date matches todays month and day.
 
@@ -87,5 +87,5 @@ def has_birthday_today(date):
         date = string_to_datetime(date)
 
     today = datetime.today()
-    
+
     return (date.month == today.month) and (date.day == today.day)
