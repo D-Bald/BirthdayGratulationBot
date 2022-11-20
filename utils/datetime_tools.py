@@ -87,6 +87,5 @@ def has_birthday_today(date):
         date = string_to_datetime(date)
 
     today = datetime.today()
-    if (date.month == today.month) and (date.day == today.day):
-        return True
-    return False
+    
+    return (date.month == today.month) and (date.day == today.day)

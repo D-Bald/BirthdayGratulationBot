@@ -41,9 +41,7 @@ class Birthday:
         return WriteDaysLeftError("days left is a computed attribute")
 
     def is_today(self):
-        if self.days_left == 0:
-            return True
-        return False
+        return self.days_left == 0
 
 
 class BirthdayCalendar:
