@@ -4,4 +4,4 @@ services:
     image: lemmurb/birthday-gratulation-bot:latest
     build: .
     environment:
-      DISCORD_TOKEN: ${DISCORD_TOKEN}
+      DISCORD_TOKEN: ${DISCORD_TOKEN_BIRTHDAY_CALENDAR}

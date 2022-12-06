@@ -26,7 +26,8 @@ class BirthdayCommands(commands.Cog):
     async def birthday(self,
                        inter: disnake.ApplicationCommandInteraction,
                        name: str,
-                       date: str | None):
+                       date: str = commands.Param(default="")
+                       ):
         """Sends birthday date for given name or creates new entry if a date is passed."""
         """
         Depending on the input either sends back the birthday associated to the given name in the guild derived by the context
@@ -44,7 +45,7 @@ class BirthdayCommands(commands.Cog):
         # Falls nicht, füge diesen hinzu, falls ein Datum angegeben wurde.
         if await cal.exists_entry(name):
             # Falls ein Datum angegeben wurde, wird der bestehende Eintrag nicht überschrieben
-            if date:
+            if date: # Empty string `""` is treated as `False`
                 await inter.send(
                     f"Geburtstag von {name} schon gespeichert.\nZum Löschen verwende `/forgetbirthday {name}`"
                 )
