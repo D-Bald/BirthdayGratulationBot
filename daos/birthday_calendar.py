@@ -141,7 +141,7 @@ class BirthdayCalendar:
             "guild_id": self.guild_id
         })
         df = pd.concat(
-            [await self._get_all_birthdays(filter_by_guild_id=False), df_new
+            [await self._get_all_birthdays_as_df(filter_by_guild_id=False), df_new
              ],  # No filtering to not override the file with missing entries.
             ignore_index=True,
         )
